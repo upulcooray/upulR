@@ -1,12 +1,13 @@
 
 #' Convert tableby object to a flextable
+#' @param tblby A tableby object
 #'
-#' @param tblby arsenal::tableby object
-#' @param header_row
-#' @param colwidths
+#' @param header_row title for header row
+#' @param colwidths based on the headvar
+#' @param size font size
+#' @param family font family
 #'
 #' @return none
-
 tableby_to_flextable <- function(tblby,
                                  header_row= "add span row title",
                                  colwidths= c(1,4),
@@ -74,10 +75,12 @@ tableby_to_flextable <- function(tblby,
 #' @param catvar_stats Stats to display for categorical variables
 #' @param stats_labels List of labels for respective stats
 #' @param ... Takes any argument for the arsenal::tableby.control() function
-#'
+#' @param font_size change font size (default 11)
+#' @param font_family change font family "Arial" is default
+#' @import dplyr arsenal glueformula forcats officer glue flextable stringr
+#' @importFrom stats setNames
 #' @return A .docx document with the table
 #' @export
-#'
 #' @examples  df <- mtcars
 #'
 #' create_table1(df,headvar= "am",
@@ -92,7 +95,7 @@ create_table1 <- function(df,
                           levels_order= NULL,
                           rowvar_labels=NULL,
                           headvar_na_level= "Missing",
-                          file_name= "table",
+                          file_name= "mytable",
                           header= "add span row title",
                           digits_num = 1L,
                           do_test= FALSE,
@@ -108,9 +111,6 @@ create_table1 <- function(df,
                           # digits.pct = 1L,
                           ... ){
 
-  library(magrittr)
-
-
   mycontrols  <- arsenal::tableby.control(test=do_test,
                                           total=col_total,
                                           numeric.stats= numvar_stats,
@@ -124,10 +124,9 @@ create_table1 <- function(df,
 
   formula <- glueformula::gf({headvar}~ {rowvars})
 
-  var <- rlang::enquo(headvar)
 
   df <- dplyr::mutate(df,dplyr::across(-dplyr::all_of(num_vars),
-                                       ~as.factor(.)))
+                                       ~as.factor(.x)))
   if (!is.null(headvar_levels)){
 
     df[[headvar]] <- forcats::fct_recode(df[[headvar]], !!!headvar_levels)
@@ -147,10 +146,8 @@ create_table1 <- function(df,
   arsenal::labels(df)<- setNames(rowvar_labels, rowvars)
   }
 
-  tab1_df<- df%>%
-
-    arsenal::tableby(formula = formula,
-                     data=.,
+  tab1_df<- arsenal::tableby(formula = formula,
+                     data=df,
                      control = mycontrols)
 
   tab <- tableby_to_flextable(tab1_df ,
@@ -162,7 +159,7 @@ create_table1 <- function(df,
 
   doc <- officer::read_docx()
   doc <- flextable::body_add_flextable(doc, value = tab)
-  fileout <- tempfile(fileext = ".docx")
+  fileout <- tempfile(fileext = "/.docx")
   fileout <- glue::glue({file_name},".docx") # write in your working directory
 
   print(doc, target = fileout)
