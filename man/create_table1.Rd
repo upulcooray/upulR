@@ -20,6 +20,7 @@ create_table1(
   numvar_stats = c("meansd", "Nmiss"),
   catvar_stats = c("countrowpct"),
   stats_labels = list(Nmiss = "(Missing)"),
+  out_type = "docx",
   font_size = 11,
   font_family = "Arial",
   ...
@@ -59,6 +60,8 @@ can specify tets with additional arguments (?arsenal::tableby.control)}
 \item{catvar_stats}{Stats to display for categorical variables}
 
 \item{stats_labels}{List of labels for respective stats}
+
+\item{out_type}{select "pdf" or "docx"}
 
 \item{font_size}{change font size (default 11)}
 

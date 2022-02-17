@@ -77,6 +77,7 @@ tableby_to_flextable <- function(tblby,
 #' @param ... Takes any argument for the arsenal::tableby.control() function
 #' @param font_size change font size (default 11)
 #' @param font_family change font family "Arial" is default
+#' @param out_type select "pdf" or "docx"
 #' @import dplyr arsenal glueformula forcats officer glue flextable stringr
 #' @importFrom stats setNames
 #' @return A .docx document with the table
@@ -103,6 +104,7 @@ create_table1 <- function(df,
                           numvar_stats= c("meansd","Nmiss"),
                           catvar_stats= c("countrowpct"),
                           stats_labels=list(Nmiss= "(Missing)"),
+                          out_type= "docx",
                           font_size=11,
                           font_family= "Arial",
                           # numeric.test="kwt",
@@ -156,15 +158,35 @@ create_table1 <- function(df,
                               size = font_size,
                               family= font_family
                               )
+  if ("pdf" %in% out_type){
+    return(tab)
+  }else{
+    doc <- officer::read_docx()
+    doc <- flextable::body_add_flextable(doc, value = tab)
+    fileout <- tempfile(fileext = "/.docx")
+    fileout <- glue::glue({file_name},".docx") # write in your working directory
 
-  doc <- officer::read_docx()
-  doc <- flextable::body_add_flextable(doc, value = tab)
-  fileout <- tempfile(fileext = "/.docx")
-  fileout <- glue::glue({file_name},".docx") # write in your working directory
+    print(doc, target = fileout)
 
-  print(doc, target = fileout)
+  }
 
 
 }
+
+
+
+#' Table function which lists NA entries by default
+#' This is a simple wrapper to change defaults from the base R table()
+#' @param \dots one or more objects which can be interpreted as factors (including character strings), or a list (or data frame) whose components can be so interpreted. (For as.table and as.data.frame, arguments passed to specific methods.)
+#' @param exclude levels to remove for all factors in .... If set to NULL, it implies useNA = "always". See 'Details' for its interpretation for non-factor arguments.
+#' @param useNA whether to include NA values in the table. See 'Details'.
+#' @param deparse.level controls how the default dnn is constructed. See 'Details'.
+#' @export tab
+#' @return tab() returns a contingency table, an object of class "table", an array of integer values
+#' @seealso table
+tab <- function( ..., exclude = NULL, useNA = c("no", "ifany", "always"), deparse.level = 1 ) {
+  table( ..., exclude=exclude, useNA=useNA, deparse.level=deparse.level )
+}
+
 
 

@@ -2,6 +2,7 @@
 
 export("%>%")
 export(create_table1)
+export(tab)
 import(arsenal)
 import(dplyr)
 import(flextable)
